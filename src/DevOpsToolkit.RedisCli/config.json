@@ -1,0 +1,4 @@
+﻿{
+    "RedisInstance": "localhost:6380",
+    "RedisConnectionString": "localhost:6380,password=pw,ssl=True,abortConnect=False,connectTimeout=60000,asyncTimeout=60000,syncTimeout=60000"
+}
