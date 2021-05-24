@@ -15,19 +15,20 @@ namespace DevOpsToolkit.RedisCli
         static void Main(string[] args)
         {
             Console.WriteLine(@"");
-            Console.WriteLine(@"                   .___.__               __  .__   ");
-            Console.WriteLine(@"_______   ____   __| _/|__| ______ _____/  |_|  |  ");
-            Console.WriteLine(@"\_  __ \_/ __ \ / __ | |  |/  ___// ___\   __\  |  ");
-            Console.WriteLine(@" |  | \/\  ___// /_/ | |  |\___ \\  \___|  | |  |__");
-            Console.WriteLine(@" |__|    \___  >____ | |__/____  >\___  >__| |____/");
-            Console.WriteLine(@"             \/     \/         \/     \/           ");
+            Console.WriteLine(@"                   .___.__              .__  .__ ");
+            Console.WriteLine(@"_______   ____   __| _/|__| ______ ____ |  | |__|");
+            Console.WriteLine(@"\_  __ \_/ __ \ / __ | |  |/  ___// ___\|  | |  |");
+            Console.WriteLine(@" |  | \/\  ___// /_/ | |  |\___ \\  \___|  |_|  |");
+            Console.WriteLine(@" |__|    \___  >____ | |__/____  >\___  >____/__|");
+            Console.WriteLine(@"             \/     \/         \/     \/         ");
             Console.WriteLine(@"");
 
-            Parser.Default.ParseArguments<ListKeys, ShowKey, FlushAllKeys, DeleteKeys>(args)
-                .WithParsed<ListKeys>(options => RunListKeys(options))
+            Parser.Default.ParseArguments<ListKeys, ShowKey, FlushAllKeys, DeleteKeys, CheckConnectionKeys>(args)
+                .WithParsed<ListKeys>(RunListKeys)
                 .WithParsed<ShowKey>(async options => await RunShowKey(options))
                 .WithParsed<FlushAllKeys>(async options => await RunFlushAllKeys(options))
                 .WithParsed<DeleteKeys>(async options => await RunDeleteKeys(options))
+                .WithParsed<CheckConnectionKeys>(async options => await CheckConnectionKeys(options))
                 .WithNotParsed(Errors);
         }
 
@@ -35,7 +36,7 @@ namespace DevOpsToolkit.RedisCli
         {
             foreach (var error in errors)
             {
-                Console.WriteLine($"Error: {error.ToString()}");
+                Console.WriteLine($"Error: {error}");
             }
         }
 
@@ -157,6 +158,32 @@ namespace DevOpsToolkit.RedisCli
             {
                 Console.WriteLine($"Delete Redis Key: {key}");
                 await database.KeyDeleteAsync(key);
+            }
+
+            Console.WriteLine("");
+            Console.WriteLine("Press key to exit.");
+            Console.ReadLine();
+        }
+        
+        private static async Task CheckConnectionKeys(CheckConnectionKeys options)
+        {
+            var configuration = Configuration.GetConfiguration();
+
+            try
+            {
+                var redis = ConnectionMultiplexer.Connect(configuration["RedisConnectionString"]);
+                if (redis.IsConnected)
+                {
+                    Console.WriteLine("Redis connected OK.");
+                }
+                else
+                {
+                    Console.WriteLine("Redis not connected."); 
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Redis not connected {e.Message}.");
             }
 
             Console.WriteLine("");

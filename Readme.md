@@ -2,10 +2,22 @@
 
 Access to Redis server and apply some of the functions:
 
-- List all keys / List keys with pattern
-- Show key value (with decompression if used)
-- Delete a key / Delete keys with pattern
-- Flush all keys (removes all keys from Redis)
+```powershell
+# List all keys / List keys with pattern
+rscli list
+rscli list -p <partialname>*
+# Show key value (with decompression if used)
+rscli show -k <keyname>
+rscli show -k <keyname> -d
+# Delete a key / Delete keys with pattern
+rscli delete -p <keyname>
+rscli delete -p <partialname>*
+# Flush all keys (removes all keys from Redis)
+rscli flushall
+# Check connection key (check if connection to Redis is OK)
+rscli check
+```
+
 
 ## Configuration
 
