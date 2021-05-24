@@ -16,6 +16,8 @@ rscli delete -p <partialname>*
 rscli flushall
 # Check connection key (check if connection to Redis is OK)
 rscli check
+# Get number of client connections to the Redis server
+rscli clients
 ```
 
 
