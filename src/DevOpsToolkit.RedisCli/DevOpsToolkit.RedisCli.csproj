@@ -9,9 +9,9 @@
         <RootNamespace>DevOpsToolkit.RedisCli</RootNamespace>
         <PackageId>rscli</PackageId>
         <Product>DevOpsToolkit.RedisCli</Product>
-        <AssemblyVersion>1.0.1</AssemblyVersion>
-        <FileVersion>1.0.1</FileVersion>
-        <Version>1.0.1</Version>
+        <AssemblyVersion>1.0.2</AssemblyVersion>
+        <FileVersion>1.0.2</FileVersion>
+        <Version>1.0.2</Version>
         <RuntimeIdentifier>win-x64</RuntimeIdentifier>
         <PublishTrimmed>true</PublishTrimmed>
         <PublishReadyToRun>true</PublishReadyToRun>

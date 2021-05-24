@@ -23,12 +23,14 @@ namespace DevOpsToolkit.RedisCli
             Console.WriteLine(@"             \/     \/         \/     \/         ");
             Console.WriteLine(@"");
 
-            Parser.Default.ParseArguments<ListKeys, ShowKey, FlushAllKeys, DeleteKeys, CheckConnectionKeys>(args)
+            Parser.Default
+                .ParseArguments<ListKeys, ShowKey, FlushAllKeys, DeleteKeys, CheckConnectionKeys, ClientKeys>(args)
                 .WithParsed<ListKeys>(RunListKeys)
                 .WithParsed<ShowKey>(async options => await RunShowKey(options))
                 .WithParsed<FlushAllKeys>(async options => await RunFlushAllKeys(options))
                 .WithParsed<DeleteKeys>(async options => await RunDeleteKeys(options))
                 .WithParsed<CheckConnectionKeys>(async options => await CheckConnectionKeys(options))
+                .WithParsed<ClientKeys>(async options => await ClientKeys(options))
                 .WithNotParsed(Errors);
         }
 
@@ -66,10 +68,6 @@ namespace DevOpsToolkit.RedisCli
                     Console.WriteLine($"{key}");
                 }
             }
-
-            Console.WriteLine("");
-            Console.WriteLine("Press key to exit.");
-            Console.ReadLine();
         }
 
         private static async Task RunShowKey(ShowKey options)
@@ -102,10 +100,6 @@ namespace DevOpsToolkit.RedisCli
                     : $"Value: {Encoding.UTF8.GetString(data)}");
 
             Console.WriteLine($"Expiry: {new DateTimeOffset((long) absexp.Value, TimeSpan.Zero) - DateTimeOffset.Now}");
-
-            Console.WriteLine("");
-            Console.WriteLine("Press key to exit.");
-            Console.ReadLine();
         }
 
         private static async Task RunFlushAllKeys(FlushAllKeys options)
@@ -129,10 +123,6 @@ namespace DevOpsToolkit.RedisCli
             var database = redis.GetDatabase();
 
             await server.FlushDatabaseAsync(database.Database);
-
-            Console.WriteLine("");
-            Console.WriteLine("Press key to exit.");
-            Console.ReadLine();
         }
 
         private static async Task RunDeleteKeys(DeleteKeys options)
@@ -159,12 +149,8 @@ namespace DevOpsToolkit.RedisCli
                 Console.WriteLine($"Delete Redis Key: {key}");
                 await database.KeyDeleteAsync(key);
             }
-
-            Console.WriteLine("");
-            Console.WriteLine("Press key to exit.");
-            Console.ReadLine();
         }
-        
+
         private static async Task CheckConnectionKeys(CheckConnectionKeys options)
         {
             var configuration = Configuration.GetConfiguration();
@@ -172,23 +158,32 @@ namespace DevOpsToolkit.RedisCli
             try
             {
                 var redis = ConnectionMultiplexer.Connect(configuration["RedisConnectionString"]);
-                if (redis.IsConnected)
-                {
-                    Console.WriteLine("Redis connected OK.");
-                }
-                else
-                {
-                    Console.WriteLine("Redis not connected."); 
-                }
+                Console.WriteLine(redis.IsConnected ? "Redis connected OK." : "Redis not connected.");
             }
             catch (Exception e)
             {
                 Console.WriteLine($"Redis not connected {e.Message}.");
             }
+        }
 
+        private static async Task ClientKeys(ClientKeys options)
+        {
+            var configuration = Configuration.GetConfiguration();
+
+            var redis = ConnectionMultiplexer.Connect(configuration["RedisConnectionString"]);
+            var server = redis.GetServer(configuration["RedisInstance"]);
+            var clients = server.ClientList();
+
+            Console.WriteLine("Redis Connections");
             Console.WriteLine("");
-            Console.WriteLine("Press key to exit.");
-            Console.ReadLine();
+            Console.WriteLine("{0,-50}{1,-20}", "Client Name", "Connection count");
+            Console.WriteLine("{0,-50}{1,-20}", "-------------------------------------", "----------------------");
+            foreach (var client in clients
+                .GroupBy(g => g.Name, (key, g) => new {Name = key, Count = g.Count()})
+                .OrderByDescending(o => o.Count))
+            {
+                Console.WriteLine("{0,-50}{1,-20}", client.Name, client.Count);
+            }
         }
     }
 }
